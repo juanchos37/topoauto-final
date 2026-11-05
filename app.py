@@ -1,4 +1,6 @@
-import streamlit as st
+
+
+      import streamlit as st
 import pandas as pd
 import numpy as np
 import geopandas as gpd
@@ -7,6 +9,7 @@ import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from shapely.geometry import Polygon
+import zipfile
 
 # 1. TUS DATOS PROFESIONALES
 MARCA = "TopoAuto"
@@ -14,13 +17,13 @@ NOMBRE = "Ing. Juan David Ospino M."
 CARGO = "Cadenero Topográfico SENA | Desarrollador"
 CELULAR = "300 239 0779"
 EMAIL = "juanospimoscote33@gmail.com"
-PRECIO_LICENCIA = 150000  # LE SUBIMOS EL PRECIO POR EL DISEÑO PRO
+PRECIO_LICENCIA = 150000
 DIAS_PRUEBA = 1
 
 # CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title=f"{MARCA} Pro - {NOMBRE}", layout="wide", page_icon="🗺️")
 
-# INYECCIÓN DE CSS AVANZADO
+# CSS AVANZADO
 st.markdown("""
 <style>
 .main .block-container { padding-top: 2rem; padding-bottom: 2rem; }
@@ -48,7 +51,7 @@ with st.sidebar:
         st.session_state.licencia_activa = True
         st.success("✨ Licencia de Desarrollador Activa")
 
-# 2. CONTROL DE PRUEBA Y ACTIVACIÓN
+# CONTROL DE PRUEBA
 if 'primer_ingreso' not in st.session_state:
     st.session_state.primer_ingreso = datetime.date.today()
     st.session_state.licencia_activa = False
@@ -56,11 +59,10 @@ if 'primer_ingreso' not in st.session_state:
 dias_transcurridos = (datetime.date.today() - st.session_state.primer_ingreso).days
 dias_restantes = DIAS_PRUEBA - dias_transcurridos
 
-# 3. BLOQUEO SI SE ACABÓ LA PRUEBA
+# BLOQUEO
 if dias_restantes < 0 and not st.session_state.licencia_activa:
     st.error("🚨 SU PERIODO DE PRUEBA HA FINALIZADO")
     st.header(f"Adquiera su Licencia Comercial: ${PRECIO_LICENCIA:,} COP")
-    st.write("Para continuar procesando carteras topográficas sin límites:")
     col_pago1, col_pago2 = st.columns(2)
     with col_pago1: st.info(f"📱 **Nequi / Daviplata**\n\n`{CELULAR}`")
     with col_pago2: st.info(f"🏦 **Transferencia**\n\nSolicitar datos al contacto")
@@ -72,7 +74,7 @@ if dias_restantes < 0 and not st.session_state.licencia_activa:
         st.success(f"Perfecto. Comunícate al {CELULAR} para activación inmediata.")
     st.stop()
 
-# 4. BANNERS
+# BANNERS
 if dias_restantes >= 0 and not st.session_state.licencia_activa:
     st.info(f"🎁 **Versión de Evaluación:** Te queda {dias_restantes} día. Licencia Pro: ${PRECIO_LICENCIA:,} COP")
 elif st.session_state.licencia_activa:
@@ -83,7 +85,7 @@ st.title("🗺️ Procesador de Carteras Topográficas Pro")
 st.markdown("Convierte tus datos de campo en informes ejecutivos y planos base de ingeniería en 5 minutos.")
 st.markdown("---")
 
-# PASO 1: CARGA
+# CARGA
 st.subheader("📋 Paso 1: Carga de Datos de Campo")
 archivo = st.file_uploader("Arrastra tu archivo Excel (.xlsx) con columnas: Punto, Este, Norte, Cota, Descripcion", type=["xlsx"])
 
@@ -104,16 +106,14 @@ if archivo:
     
     area_total = 0
     poligono_geom = None
+    gdf = gpd.GeoDataFrame(df_filtrado, geometry=gpd.points_from_xy(df_filtrado.Este, df_filtrado.Norte), crs="EPSG:9377")
+    
     if len(df_filtrado) > 2:
         try:
-            gdf = gpd.GeoDataFrame(df_filtrado, geometry=gpd.points_from_xy(df_filtrado.Este, df_filtrado.Norte), crs="EPSG:9377")
             poligono_geom = gdf.unary_union.convex_hull
             area_total = poligono_geom.area
         except:
-            gdf = gpd.GeoDataFrame(df_filtrado, geometry=gpd.points_from_xy(df_filtrado.Este, df_filtrado.Norte), crs="EPSG:9377")
             area_total = 0
-    else:
-        gdf = gpd.GeoDataFrame(df_filtrado, geometry=gpd.points_from_xy(df_filtrado.Este, df_filtrado.Norte), crs="EPSG:9377")
 
     st.markdown("---")
     st.subheader("📊 Paso 2: Análisis del Levantamiento")
@@ -154,18 +154,26 @@ if archivo:
         st.markdown("#### Generación Automática de Entregables")
         col_dl1, col_dl2, col_dl3 = st.columns(3)
         
-        # EXCEL
+        # 1. EXCEL
         output_excel = io.BytesIO()
         with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
             df_filtrado.to_excel(writer, index=False, sheet_name='Cartera_Procesada')
         col_dl1.download_button("🟢 DESCARGAR EXCEL", output_excel.getvalue(), f"Cartera_{filtro}_{datetime.date.today()}.xlsx", use_container_width=True)
         
-        # SHAPEFILE
-        output_shp = io.BytesIO()
-        gdf.to_file(output_shp, driver='ESRI Shapefile')
-        col_dl2.download_button("🟡 DESCARGAR SHAPEFILE", output_shp.getvalue(), "puntos.shp", use_container_width=True)
+        # 2. SHAPEFILE EN ZIP - ARREGLO
+        shp_zip = io.BytesIO()
+        with zipfile.ZipFile(shp_zip, 'w') as zf:
+            gdf.to_file(f"/vsizip/{shp_zip.name}", driver="ESRI Shapefile")
+            # Método alternativo que SIEMPRE funciona en Streamlit Cloud
+            temp_dir = "/tmp/shp_temp"
+            import os
+            if not os.path.exists(temp_dir): os.makedirs(temp_dir)
+            gdf.to_file(f"{temp_dir}/puntos.shp", driver="ESRI Shapefile")
+            for file in os.listdir(temp_dir):
+                zf.write(f"{temp_dir}/{file}", file)
+        col_dl2.download_button("🟡 DESCARGAR SHAPEFILE .ZIP", shp_zip.getvalue(), "puntos_topografia.zip", use_container_width=True)
 
-        # PDF ARREGLADO
+        # 3. PDF
         output_pdf = io.BytesIO()
         with PdfPages(output_pdf) as pdf:
             fig_pdf, ax_pdf = plt.subplots(figsize=(8.5, 11))
