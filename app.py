@@ -61,8 +61,7 @@ if archivo:
     df = df.dropna(subset=['Punto', 'Este', 'Norte', 'Cota', 'Descripcion'])
     st.success(f"✔️ {len(df)} puntos cargados.")
     
-    opciones = ['TODOS LOS PUNTOS']
-    opciones = opciones + sorted(list(df['Descripcion'].unique().astype(str)))
+    opciones = ['TODOS LOS PUNTOS'] + sorted(list(df['Descripcion'].unique().astype(str)))
     filtro = st.selectbox("Filtrar por:", opciones)
     
     if filtro != 'TODOS LOS PUNTOS':
@@ -80,4 +79,50 @@ if archivo:
     if len(df_filtrado) > 2:
         try:
             poligono_geom = gdf.unary_union.convex_hull
-            area_total = pol
+            area_total = poligono_geom.area
+        except Exception as e:
+            area_total = 0
+            poligono_geom = None
+
+    tab_resumen, tab_tabla, tab_plano, tab_bitacora, tab_exportar = st.tabs([
+        "📈 Resumen", "📄 Tabla", "📐 Plano", "📓 Bitácora", "📥 Descargas"
+    ])
+
+    with tab_resumen:
+        c1, c2, c3 = st.columns(3)
+        c1.metric("🔢 Puntos", len(df_filtrado))
+        c2.metric("⛰️ Cota Prom", round(df_filtrado['Cota'].mean(), 2))
+        c3.metric("📐 Área", round(area_total, 2))
+
+    with tab_tabla:
+        st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
+
+    with tab_plano:
+        fig, ax = plt.subplots(figsize=(9, 6))
+        if poligono_geom is not None and isinstance(poligono_geom, Polygon):
+            x_pol, y_pol = poligono_geom.exterior.xy
+            ax.fill(x_pol, y_pol, alpha=0.12, fc='#10b981', ec='#047857')
+        ax.scatter(df_filtrado['Este'], df_filtrado['Norte'], color='#2563eb', s=45)
+        for indice, fila in df_filtrado.iterrows(): 
+            ax.text(fila['Este'], fila['Norte'], f" {int(fila['Punto'])}", fontweight='bold')
+        ax.set_xlabel("ESTE")
+        ax.set_ylabel("NORTE")
+        ax.grid(True)
+        ax.axis('equal')
+        st.pyplot(fig)
+
+    with tab_bitacora:
+        st.markdown("#### 📓 Bitácora Diaria")
+        fecha = st.date_input("Fecha", datetime.date.today())
+        proyecto = st.text_input("Proyecto", "Lote Santa Marta")
+        novedades = st.text_area("Novedades", "Sin novedad")
+        
+        if st.button("📄 GENERAR BITACORA PDF"):
+            output_bit = io.BytesIO()
+            with PdfPages(output_bit) as pdf:
+                fig_b, ax_b = plt.subplots(figsize=(8.5, 11))
+                ax_b.axis('off')
+                ax_b.text(0.5, 0.95, f"BITACORA DIARIA - {MARCA}", ha='center', fontsize=16, fontweight='bold')
+                ax_b.text(0.05, 0.90, f"Proyecto: {proyecto}", fontsize=12)
+                ax_b.text(0.05, 0.87, f"Fecha: {fecha}", fontsize=12)
+               
