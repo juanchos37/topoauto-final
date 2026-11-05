@@ -31,7 +31,7 @@ st.markdown("""
     
     /* Personalización de la barra lateral (Sidebar) */
     [data-testid="stSidebar"] {
-        background-color: #1e293b !important; /* Gris oscuro elegante */
+        background-color: #1e293b !important;
         color: #f8fafc !important;
     }
     [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {
@@ -43,12 +43,12 @@ st.markdown("""
         background-color: #ffffff;
         padding: 20px;
         border-radius: 12px;
-        border-left: 6px solid #2563eb; /* Línea azul de software de ingeniería */
+        border-left: 6px solid #2563eb;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         transition: transform 0.2s;
     }
     div[data-testid="stMetric"]:hover {
-        transform: translateY(-2px); /* Efecto visual flotante */
+        transform: translateY(-2px);
     }
     
     /* Estilo de las Pestañas (Tabs) */
@@ -67,7 +67,7 @@ st.markdown("""
         transition: all 0.2s;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #2563eb !important; /* Fondo azul para la pestaña activa */
+        background-color: #2563eb !important;
         color: #ffffff !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -251,3 +251,5 @@ if archivo:
         output_pdf = io.BytesIO()
         fig_pdf, ax_pdf = plt.subplots(figsize=(6, 4))
         if poligono_geom and not poligono_geom.is_empty and isinstance(poligono_geom, Polygon):
+            x_p, y_p = poligono_geom.exterior.xy
+            ax_pdf.fill(x_p, y_p, alpha=0.12, fc='#10b981', ec='#047857')
