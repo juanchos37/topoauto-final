@@ -7,6 +7,8 @@ import io
 import datetime
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 # 1. TUS DATOS PROFESIONALES
 MARCA = "TopoAuto"
