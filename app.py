@@ -2,7 +2,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import gpd as gpd # Nota: Si en tu requirements pusiste geopandas, se importa como geopandas
 import geopandas as gpd
 import io
 import datetime
