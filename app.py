@@ -12,26 +12,27 @@ from exif import Image as ExifImage
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
-# ========= CONFIGURACIÓN SEGURA =========
-TELEGRAM_TOKEN = "PON_AQUI_TU_TOKEN"
-TELEGRAM_CHAT_ID = "PON_AQUI_TU_CHAT_ID"
+# ========= CONFIGURACIÓN SEGURA DE TELEGRAM (100% GRATIS) =========
+TELEGRAM_TOKEN = "PON_AQUI_TU_TELEGRAM_TOKEN"
+TELEGRAM_CHAT_ID = "PON_AQUI_TU_TELEGRAM_CHAT_ID"
 CLAVE_SECRETA = "TOPOAUTO2026"  # Clave maestra del desarrollador
 
-# Base de datos de licencias. Formato: "CLAVE": "FECHA_VENCIMIENTO"
+# Base de datos de licencias comerciales
 LICENCIAS_VALIDAS = {
-    "TOPO150-ABC123-2026-12-31": "2026-12-31", # Plan BÁSICO $150.000
-    "TOPO300-XYZ789-2027-06-30": "2027-06-30", # Plan PRO $300.000
-    "TOPO450-EMP001-2027-12-31": "2027-12-31", # Plan EMPRESA $450.000
+    "TOPO150-ABC123-2026-12-31": "2026-12-31", 
+    "TOPO300-XYZ789-2027-06-30": "2027-06-30", 
+    "TOPO450-EMP001-2027-12-31": "2027-12-31",
 }
 
-# ========= FUNCIONES CORE =========
+# ========= FUNCIONES CORE DE COMUNICACIÓN =========
 def enviar_telegram(mensaje):
+    """Envía alertas en tiempo real a tu chat de Telegram de forma gratuita"""
     try:
         url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
         data = {"chat_id": TELEGRAM_CHAT_ID, "text": mensaje}
         requests.post(url, data=data, timeout=5)
     except:
-        pass
+        pass  # Si el servidor de Telegram falla, el software no se detiene
 
 def validar_licencia(clave):
     if clave == "SENA2026":  # Tu acceso maestro como desarrollador
@@ -162,11 +163,13 @@ if not st.session_state.logueado:
                 st.session_state.clave = clave_input
                 st.session_state.nombre = nombre_input
                 st.success(f"✔️ {mensaje}")
-                enviar_telegram(f"✅ ACCESO AUTORIZADO: {nombre_input} | Clave: {clave_input}")
+                # ALERTA EXCLUSIVA A TELEGRAM: Login Exitoso
+                enviar_telegram(f"🚀 TOPOAUTO PRO: El cliente '{nombre_input}' ha ingresado al software con la clave: {clave_input}")
                 st.rerun()
             else:
                 st.error(f"❌ {mensaje}")
-                enviar_telegram(f"⚠️ INTENTO FALLIDO: {nombre_input} ingresó clave errónea: {clave_input}")
+                # ALERTA EXCLUSIVA A TELEGRAM: Intento Fallido
+                enviar_telegram(f"⚠️ TOPOAUTO ALERTA: Intento de ingreso RECHAZADO para '{nombre_input}' con la clave errónea: {clave_input}")
     st.stop()
 
 # ========= PANEL PRINCIPAL DESBLOQUEADO =========
@@ -188,7 +191,6 @@ with tab_excel_modo:
         df = df.dropna(subset=['Punto', 'Este', 'Norte', 'Cota'])
         st.success(f"✔️ Se han cargado con éxito {len(df)} puntos topográficos.")
         
-        # Filtro por descripción opcional si existe la columna
         if 'Descripcion' in df.columns:
             opciones = ['TODOS LOS PUNTOS'] + sorted(list(df['Descripcion'].unique().astype(str)))
             filtro = st.selectbox("Filtrar por grupo descriptivo:", opciones, key="filtro_excel")
@@ -196,7 +198,6 @@ with tab_excel_modo:
         else:
             df_filtrado = df.copy()
             
-        # Bitácora de distancias consecutivas por Pitágoras
         df_filtrado['Distancia_m'] = np.sqrt((df_filtrado['Este'] - df_filtrado['Este'].shift(1))**2 + (df_filtrado['Norte'] - df_filtrado['Norte'].shift(1))**2).fillna(0).round(3)
         
         area_total = 0
@@ -222,7 +223,3 @@ with tab_excel_modo:
             
         with sub_tab_tabla:
             st.markdown("#### 📝 Bitácora de Campo con Distancias Calculadas")
-            st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
-            
-        with sub_tab_plano:
-            st.markdown("#### 📐 Plano Planimétrico de Ingeniería")
