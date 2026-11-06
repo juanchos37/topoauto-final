@@ -21,7 +21,7 @@ CLAVE_SECRETA = "TOPOAUTO2026"  # Clave maestra del desarrollador
 LICENCIAS_VALIDAS = {
     "TOPO150-ABC123-2026-12-31": "2026-12-31", # Plan BÁSICO $150.000
     "TOPO300-XYZ789-2027-06-30": "2027-06-30", # Plan PRO $300.000
-    "TOPO450-EMP001-2026-11-6": "2027-12-31", # Plan EMPRESA $450.000
+    "TOPO450-EMP001-2027-12-31": "2027-12-31", # Plan EMPRESA $450.000
 }
 
 # ========= FUNCIONES CORE =========
@@ -45,9 +45,9 @@ def validar_licencia(clave):
 def convertir_a_grados_decimales(coordenadas, referencia):
     if not coordenadas or len(coordenadas) < 3:
         return 0.0
-    grados = coordenadas[0]
-    minutos = coordenadas[1]
-    segundos = coordenadas[2]
+    grados = coordenadas
+    minutos = coordenadas
+    segundos = coordenadas
     decimal = grados + (minutos / 60.0) + (segundos / 3600.0)
     if referencia in ['S', 'W']:
         decimal = -decimal
@@ -75,7 +75,6 @@ def extraer_datos_foto(archivo_foto):
 def generar_dwg_texto(df):
     contenido = "HEADER\nVERSION TOPOAUTO\nENTITIES\n"
     for i, row in df.iterrows():
-        # Corregido: Mapeo explícito usando el objeto row con los nombres de tus columnas
         este_val = row.get('Este', 0.0)
         norte_val = row.get('Norte', 0.0)
         cota_val = row.get('Cota', 0.0)
@@ -100,7 +99,7 @@ def generar_pdf_igac(df, nombre_cliente, clave_usada):
     y -= 20
     c.setFont("Helvetica", 10)
     for i, row in df.iterrows():
-        if y < 80:  # Control de salto de página automático
+        if y < 80:
             c.showPage()
             c.setFont("Helvetica", 10)
             y = 750
@@ -197,6 +196,7 @@ with tab_excel_modo:
         else:
             df_filtrado = df.copy()
             
+        # RESTAURADO: Bitácora de distancias consecutivas por Pitágoras
         df_filtrado['Distancia_m'] = np.sqrt((df_filtrado['Este'] - df_filtrado['Este'].shift(1))**2 + (df_filtrado['Norte'] - df_filtrado['Norte'].shift(1))**2).fillna(0).round(3)
         
         area_total = 0
@@ -209,7 +209,10 @@ with tab_excel_modo:
             except:
                 area_total = 0
 
-        sub_tab_resumen, sub_tab_tabla, sub_tab_plano, sub_tab_exportar = st.tabs(["📈 Resumen", "📄 Tabla de Datos", "📐 Plano Base", "📥 Módulo de Descargas"])
+        st.markdown("---")
+        st.subheader("📊 Paso 2: Análisis e Información del Levantamiento")
+
+        sub_tab_resumen, sub_tab_tabla, sub_tab_plano, sub_tab_exportar = st.tabs(["📈 Resumen", "📄 Tabla de Datos (Bitácora)", "📐 Plano Base", "📥 Módulo de Descargas"])
         
         with sub_tab_resumen:
             c1, c2, c3 = st.columns(3)
@@ -218,8 +221,8 @@ with tab_excel_modo:
             c3.metric(label="📐 Superficie Polígono (Aprox)", value=f"{round(area_total, 2)} m²")
             
         with sub_tab_tabla:
+            st.markdown("#### 📝 Bitácora de Campo con Distancias Calculadas")
             st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
             
+        # RESTAURADO: Gráficos de plano planimétrico completo
         with sub_tab_plano:
-            fig, ax = plt.subplots(figsize=(9, 6), facecolor='#f8fafc')
-            ax.set_facecolor('#ffffff')
