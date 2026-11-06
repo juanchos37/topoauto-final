@@ -12,27 +12,39 @@ from exif import Image as ExifImage
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
-# ========= CONFIGURACIÓN SEGURA DE TELEGRAM (100% GRATIS) =========
-TELEGRAM_TOKEN = "PON_AQUI_TU_TELEGRAM_TOKEN"
-TELEGRAM_CHAT_ID = "PON_AQUI_TU_TELEGRAM_CHAT_ID"
+# =========================================================================
+# 🛠️ ZONA DE CONFIGURACIÓN SEGURA DE TELEGRAM (PON AQUÍ TUS CÓDIGOS)
+# =========================================================================
+# REEMPLAZA ÚNICAMENTE LO QUE ESTÁ DENTRO DE LAS COMILLAS
+TELEGRAM_TOKEN = "AQUÍ_PEGA_EL_CODIGO_LARGO_DE_BOTFATHER"
+TELEGRAM_CHAT_ID = "AQUÍ_PEGA_LOS_NUMEROS_QUE_TE_DIO_EL_BOT_DE_ID"
 CLAVE_SECRETA = "TOPOAUTO2026"  # Clave maestra del desarrollador
 
-# Base de datos de licencias comerciales
+# Base de datos local de licencias comerciales para tus clientes
 LICENCIAS_VALIDAS = {
-    "TOPO150-ABC123-2026-12-31": "2026-12-31", 
-    "TOPO300-XYZ789-2027-06-30": "2027-06-30", 
-    "TOPO450-EMP001-2027-12-31": "2027-12-31",
+    "TOPO150-ABC123-2026-12-31": "2026-12-31", # Plan BÁSICO $150.000
+    "TOPO300-XYZ789-2027-06-30": "2027-06-30", # Plan PRO $300.000
+    "TOPO450-EMP001-2027-12-31": "2027-12-31", # Plan EMPRESA $450.000
 }
+# =========================================================================
 
-# ========= FUNCIONES CORE DE COMUNICACIÓN =========
+# ========= TUS DATOS PROFESIONALES EN EL ENCABEZADO =========
+MARCA = "TopoAuto"
+NOMBRE = "Ing. Juan David Ospino M."
+CARGO = "Cadenero Topográfico SENA | Desarrollador"
+CELULAR = "300 239 0779"
+EMAIL = "juanospimoscote33@gmail.com"
+PRECIO_LICENCIA = 50000
+
+# ========= FUNCIONES CORE DE COMUNICACIÓN Y CÁLCULO =========
 def enviar_telegram(mensaje):
-    """Envía alertas en tiempo real a tu chat de Telegram de forma gratuita"""
+    """Envía las alertas de auditoría a tu chat de Telegram de forma gratuita"""
     try:
         url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
         data = {"chat_id": TELEGRAM_CHAT_ID, "text": mensaje}
         requests.post(url, data=data, timeout=5)
     except:
-        pass  # Si el servidor de Telegram falla, el software no se detiene
+        pass
 
 def validar_licencia(clave):
     if clave == "SENA2026":  # Tu acceso maestro como desarrollador
@@ -46,10 +58,10 @@ def validar_licencia(clave):
 def convertir_a_grados_decimales(coordenadas, referencia):
     if not coordenadas or len(coordenadas) < 3:
         return 0.0
-    grados = coordenadas
-    minutos = coordenadas
-    segundos = coordenadas
-    decimal = grados + (minutos / 60.0) + (segundos / 3600.0)
+    grados = coordenadas[0]
+    minutos = coordenadas[1]
+    segundos = coordenadas[2]
+    decimal = grados + (minutos / 60.0) + (segundos / 300.0)
     if referencia in ['S', 'W']:
         decimal = -decimal
     return decimal
@@ -116,8 +128,8 @@ def generar_pdf_igac(df, nombre_cliente, clave_usada):
     buffer.seek(0)
     return buffer
 
-# ========= INTERFAZ GRÁFICA (CSS) =========
-st.set_page_config(page_title="TopoAuto v4.8 PRO", layout="wide", page_icon="📍")
+# ========= INTERFAZ GRÁFICA INTERNA (CSS) =========
+st.set_page_config(page_title=f"{MARCA} - {NOMBRE}", layout="wide", page_icon="📍")
 
 st.markdown("""
     <style>
@@ -135,7 +147,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("📍 TopoAuto v4.8 PRO")
+st.title(f"📍 {MARCA} v4.8 PRO")
 st.caption("Módulo de Ingeniería Automatizado: De Excel a DWG + Informes Planimétricos")
 st.markdown("---")
 
@@ -163,12 +175,12 @@ if not st.session_state.logueado:
                 st.session_state.clave = clave_input
                 st.session_state.nombre = nombre_input
                 st.success(f"✔️ {mensaje}")
-                # ALERTA EXCLUSIVA A TELEGRAM: Login Exitoso
+                # ALERTA A TELEGRAM: Login Exitoso
                 enviar_telegram(f"🚀 TOPOAUTO PRO: El cliente '{nombre_input}' ha ingresado al software con la clave: {clave_input}")
                 st.rerun()
             else:
                 st.error(f"❌ {mensaje}")
-                # ALERTA EXCLUSIVA A TELEGRAM: Intento Fallido
+                # ALERTA A TELEGRAM: Intento Fallido
                 enviar_telegram(f"⚠️ TOPOAUTO ALERTA: Intento de ingreso RECHAZADO para '{nombre_input}' con la clave errónea: {clave_input}")
     st.stop()
 
@@ -213,13 +225,3 @@ with tab_excel_modo:
         st.markdown("---")
         st.subheader("📊 Paso 2: Análisis e Información del Levantamiento")
 
-        sub_tab_resumen, sub_tab_tabla, sub_tab_plano, sub_tab_exportar = st.tabs(["📈 Resumen", "📄 Tabla de Datos (Bitácora)", "📐 Plano Base", "📥 Módulo de Descargas"])
-        
-        with sub_tab_resumen:
-            c1, c2, c3 = st.columns(3)
-            c1.metric(label="🔢 Cantidad de Puntos", value=f"{len(df_filtrado)} pts")
-            c2.metric(label="⛰️ Altura / Cota Promedio", value=f"{round(df_filtrado['Cota'].mean(), 2)} m")
-            c3.metric(label="📐 Superficie Polígono (Aprox)", value=f"{round(area_total, 2)} m²")
-            
-        with sub_tab_tabla:
-            st.markdown("#### 📝 Bitácora de Campo con Distancias Calculadas")
