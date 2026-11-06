@@ -28,7 +28,7 @@ LICENCIAS_VALIDAS = {
 # =========================================================================
 
 # ========= TUS DATOS PROFESIONALES EN EL ENCABEZADO =========
-MARCA = "TopoAuto"
+MARCA = "TopoAuto Pro"
 NOMBRE = "Ing. Juan David Ospino M."
 CARGO = "Cadenero Topográfico SENA | Desarrollador"
 CELULAR = "300 239 0779"
