@@ -196,7 +196,7 @@ with tab_excel_modo:
         else:
             df_filtrado = df.copy()
             
-        # RESTAURADO: Bitácora de distancias consecutivas por Pitágoras
+        # Bitácora de distancias consecutivas por Pitágoras
         df_filtrado['Distancia_m'] = np.sqrt((df_filtrado['Este'] - df_filtrado['Este'].shift(1))**2 + (df_filtrado['Norte'] - df_filtrado['Norte'].shift(1))**2).fillna(0).round(3)
         
         area_total = 0
@@ -224,5 +224,5 @@ with tab_excel_modo:
             st.markdown("#### 📝 Bitácora de Campo con Distancias Calculadas")
             st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
             
-        # RESTAURADO: Gráficos de plano planimétrico completo
         with sub_tab_plano:
+            st.markdown("#### 📐 Plano Planimétrico de Ingeniería")
