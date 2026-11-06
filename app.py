@@ -17,6 +17,7 @@ from reportlab.lib.pagesizes import letter
 # =========================================================================
 TELEGRAM_TOKEN = "9115675773:AAHIeiGqf3tYG78HqvLn0iiZp_10kQtFJnk"
 TELEGRAM_CHAT_ID = "8632454326"
+
 CLAVE_SECRETA = "TOPOAUTO2026"  # Clave maestra del desarrollador
 
 # Base de datos local de licencias comerciales para tus clientes
