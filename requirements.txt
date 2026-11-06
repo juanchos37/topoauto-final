@@ -5,3 +5,5 @@ geopandas
 matplotlib
 openpyxl
 shapely
+exif
+reportlab
