@@ -224,4 +224,4 @@ with tab_excel_modo:
 
         st.markdown("---")
         st.subheader("📊 Paso 2: Análisis e Información del Levantamiento")
-.
+
