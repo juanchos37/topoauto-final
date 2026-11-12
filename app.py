@@ -106,4 +106,4 @@ if modo == "👷 MODO TOPÓGRAFO - Juan SAS":
                         df.to_excel(writer, index=False, sheet_name="Procesado")
                     st.download_button(label="📥 Descargar Excel Procesado", data=output.getvalue(), file_name=f"TopoAuto_Procesado_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="v122_topo_dl", use_container_width=True)
                 else:
-                    st.warning("⚠️ Tu Excel debe tener: Punto, Norte, Este, Cota
+                    st.warning("Tu Excel debe tener: Punto, Norte, Este, Cota")
