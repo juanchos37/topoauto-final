@@ -1,20 +1,19 @@
-# GeoLegal Pro - Juan SAS - v12.3 - Topografía + Despacho - TODO
+# GeoLegal Pro - Juan SAS - v12.4 LIMPIA
 import streamlit as st
 import pandas as pd
 import numpy as np
 import math
 import io
-from datetime import date, timedelta
+from datetime import date
 
-st.set_page_config(page_title="GeoLegal Pro - Juan SAS", page_icon="⚖️", layout="centered")
-st.title("⚖️ GeoLegal Pro - Juan SAS")
-st.write("Bienvenido: **Juan SAS** | Montería, Córdoba")
+st.set_page_config(page_title="GeoLegal Pro", page_icon="⚖️", layout="centered")
+st.title("GeoLegal Pro - Juan SAS")
+st.write("Bienvenido: Juan SAS | Monteria, Cordoba")
 st.divider()
-modo = st.radio("¿En qué modo quieres trabajar hoy?", ["👷 MODO TOPÓGRAFO - Juan SAS", "⚖️ MODO DESPACHO - Dra. Norma"], horizontal=True, key="modo_v122")
+modo = st.radio("Modo de trabajo", ["MODO TOPOGRAFO - Juan SAS", "MODO DESPACHO - Dra. Norma"], horizontal=True, key="modo_v124")
 st.divider()
 
-# ---------- FUNCION RED NEURONAL SIMPLIFICADA - NO NECESITA SKLEARN ----------
-def predecir_caso_v122(tipo, demandado, valor):
+def predecir_caso(tipo, demandado, valor):
     base = 50.0
     if tipo == "Nulidad":
         base = base + 18
@@ -32,7 +31,7 @@ def predecir_caso_v122(tipo, demandado, valor):
         base = base + 8
     if demandado == "Empresa Privada":
         base = base + 2
-    if demandado == "Estado / Alcaldía":
+    if demandado == "Estado / Alcaldia":
         base = base - 5
     if valor > 15000000:
         base = base + 5
@@ -40,70 +39,151 @@ def predecir_caso_v122(tipo, demandado, valor):
         base = base - 5
     prob = max(12, min(92, int(base)))
     if prob >= 70:
-        consejo = "Caso FUERTE, Prioridad ALTA, haz este primero"
+        consejo = "Caso FUERTE, Prioridad ALTA"
     elif prob >= 50:
-        consejo = "Caso MEDIO, revisa pruebas antes de radicar"
+        consejo = "Caso MEDIO, revisa pruebas"
     else:
-        consejo = "Caso DÉBIL, habla con el cliente, riesgo alto, cobra por adelantado"
+        consejo = "Caso DEBIL, cobra por adelantado"
     return prob, consejo
 
-# ---------- FUNCION DOCUMENTO IA ----------
-def generar_doc_ia_v122(tipo, cliente, hechos):
-    texto = "DOCUMENTO: " + tipo + "\nCLIENTE: " + cliente + "\n\n"
-    texto = texto + "Señor Juez, por medio del presente escrito, yo, " + cliente + ", actuando en nombre propio, me permito presentar " + tipo + " con base en los siguientes hechos:\n\n"
-    texto = texto + "HECHOS:\n" + hechos + "\n\n"
-    texto = texto + "PRETENSIONES:\n1. Se declare lo solicitado en favor de mi representado.\n2. Se ordene al demandado cumplir con sus obligaciones legales.\n\n"
-    texto = texto + "FUNDAMENTOS DE DERECHO:\nConstitución Política de Colombia, Código General del Proceso, y normas concordantes.\n\n"
-    texto = texto + "PRUEBAS:\nSe aportan las pruebas documentales que se encuentran en el expediente.\n\n"
-    texto = texto + "Atentamente,\nDra. Norma - Apoderada\nMontería, Córdoba - " + str(date.today())
-    return texto
+def hacer_documento(tipo, cliente, hechos):
+    t = "DOCUMENTO: " + tipo + "\n"
+    t = t + "CLIENTE: " + cliente + "\n\n"
+    t = t + "Senor Juez, presento " + tipo + "\n\n"
+    t = t + "HECHOS:\n" + hechos + "\n\n"
+    t = t + "PRETENSIONES:\n"
+    t = t + "1. Se declare lo solicitado.\n"
+    t = t + "2. Se ordene cumplir obligaciones.\n\n"
+    t = t + "FUNDAMENTOS: Constitucion y CGP.\n\n"
+    t = t + "Atentamente, Dra. Norma\n"
+    t = t + "Monteria, " + str(date.today())
+    return t
 
-# ============================================================
-# MODO 1 - TOPOGRAFO
-# ============================================================
-if modo == "👷 MODO TOPÓGRAFO - Juan SAS":
-    st.header("👷 Modo Topógrafo - Juan SAS")
-    st.caption("Solo topografía. No toca nada del despacho.")
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["📊 Procesar Excel", "📸 Dron", "📍 Replanteo", "📏 Nivelación", "💰 Presupuesto", "📓 Bitácora", "🔄 Conversor"])
+if modo == "MODO TOPOGRAFO - Juan SAS":
+    st.header("Modo Topografo - Juan SAS")
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Procesar Excel", "Dron", "Replanteo", "Nivelacion", "Presupuesto", "Bitacora", "Conversor"])
     with tab1:
-        st.subheader("📋 Carga de Cartera")
-        archivo = st.file_uploader("Subir Excel", type=["xlsx", "xls"], key="v122_topo_excel", label_visibility="collapsed")
+        st.subheader("Carga de Cartera")
+        archivo = st.file_uploader("Subir Excel", type=["xlsx", "xls"], key="v124_excel")
+        if archivo is None:
+            st.info("Sube tu Excel de cartera para empezar.")
         if archivo is not None:
-            try:
-                df = pd.read_excel(archivo)
-                df.columns = [str(c).strip().capitalize() for c in df.columns]
-                mapa = {}
-                for c in df.columns:
-                    cl = c.lower()
-                    if "punto" in cl or "pnt" in cl or "id" in cl:
-                        mapa[c] = "Punto"
-                    elif "norte" in cl or "north" in cl or "y" == cl:
-                        mapa[c] = "Norte"
-                    elif "este" in cl or "east" in cl or "x" == cl:
-                        mapa[c] = "Este"
-                    elif "cota" in cl or "elev" in cl or "z" == cl:
-                        mapa[c] = "Cota"
-                df = df.rename(columns=mapa)
-                st.success(f"✅ Cargados {len(df)} puntos")
-                st.dataframe(df.head(20), use_container_width=True)
-                if all(col in df.columns for col in ["Punto", "Norte", "Este", "Cota"]):
-                    df["Norte"] = pd.to_numeric(df["Norte"], errors="coerce")
-                    df["Este"] = pd.to_numeric(df["Este"], errors="coerce")
-                    df["Cota"] = pd.to_numeric(df["Cota"], errors="coerce")
-                    df = df.dropna(subset=["Norte", "Este"])
-                    distancias = [0.0]
-                    for i in range(1, len(df)):
-                        d = math.sqrt((df.iloc[i]["Norte"] - df.iloc[i-1]["Norte"]) ** 2 + (df.iloc[i]["Este"] - df.iloc[i-1]["Este"]) ** 2)
-                        distancias.append(round(d, 3))
-                    df["Dist_Anterior_m"] = distancias
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Total Puntos", len(df))
-                    c2.metric("Dist. Total (m)", f"{sum(distancias):.2f}")
-                    c3.metric("Cota Max", f"{df['Cota'].max():.2f}")
-                    st.dataframe(df, use_container_width=True)
-                    output = io.BytesIO()
-                    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                        df.to_excel(writer, index=False, sheet_name="Procesado")
-                    st.download_button(label="📥 Descargar Excel Procesado", data=output.getvalue(), file_name=f"TopoAuto_Procesado_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="v122_topo_dl", use_container_width=True)
+            df = pd.read_excel(archivo)
+            df.columns = [str(c).strip().capitalize() for c in df.columns]
+            mapa = {}
+            for c in df.columns:
+                cl = c.lower()
+                if "punto" in cl or "pnt" in cl or "id" in cl:
+                    mapa[c] = "Punto"
+                elif "norte" in cl or "north" in cl or "y" == cl:
+                    mapa[c] = "Norte"
+                elif "este" in cl or "east" in cl or "x" == cl:
+                    mapa[c] = "Este"
+                elif "cota" in cl or "elev" in cl or "z" == cl:
+                    mapa[c] = "Cota"
+            df = df.rename(columns=mapa)
+            st.success("Cargados puntos")
+            st.dataframe(df.head(20), use_container_width=True)
+            if "Punto" in df.columns and "Norte" in df.columns and "Este" in df.columns and "Cota" in df.columns:
+                df["Norte"] = pd.to_numeric(df["Norte"], errors="coerce")
+                df["Este"] = pd.to_numeric(df["Este"], errors="coerce")
+                df["Cota"] = pd.to_numeric(df["Cota"], errors="coerce")
+                df = df.dropna(subset=["Norte", "Este"])
+                distancias = [0.0]
+                for i in range(1, len(df)):
+                    dn = df.iloc[i]["Norte"] - df.iloc[i-1]["Norte"]
+                    de = df.iloc[i]["Este"] - df.iloc[i-1]["Este"]
+                    d = math.sqrt(dn * dn + de * de)
+                    distancias.append(round(d, 3))
+                df["Dist_Anterior_m"] = distancias
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Total Puntos", len(df))
+                c2.metric("Dist Total", round(sum(distancias), 2))
+                c3.metric("Cota Max", round(float(df["Cota"].max()), 2))
+                st.dataframe(df, use_container_width=True)
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                    df.to_excel(writer, index=False, sheet_name="Procesado")
+                st.download_button("Descargar Excel Procesado", data=output.getvalue(), file_name="Procesado.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="v124_dl1")
+            else:
+                st.warning("Tu Excel debe tener: Punto, Norte, Este, Cota")
+    with tab2:
+        st.subheader("Modulo Dron")
+        altura = st.number_input("Altura de vuelo (m)", value=100, min_value=20, max_value=300, key="v124_alt")
+        area = st.number_input("Area (Ha)", value=10.0, min_value=0.5, key="v124_area")
+        traslape = st.slider("Traslape (%)", 60, 90, 75, key="v124_tras")
+        if st.button("Calcular Vuelo Dron", key="v124_dron_btn", use_container_width=True):
+            tiempo = round((area * 12) / (altura / 100) + 10, 1)
+            fotos = int(area * 45 * (traslape / 75))
+            bats = max(1, math.ceil(tiempo / 22))
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Tiempo", tiempo)
+            c2.metric("Fotos", fotos)
+            c3.metric("Baterias", bats)
+            st.success("Calculo listo")
+        foto = st.file_uploader("Sube foto", type=["jpg", "jpeg", "png"], key="v124_foto")
+        if foto is not None:
+            st.image(foto, use_container_width=True)
+    with tab3:
+        st.subheader("Replanteo")
+        n1 = st.number_input("Norte Base", value=1700000.0, key="v124_n1")
+        e1 = st.number_input("Este Base", value=800000.0, key="v124_e1")
+        n2 = st.number_input("Norte Destino", value=1700100.0, key="v124_n2")
+        e2 = st.number_input("Este Destino", value=800100.0, key="v124_e2")
+        if st.button("Calcular Replanteo", key="v124_rep_btn", use_container_width=True):
+            dn = n2 - n1
+            de = e2 - e1
+            dist = math.sqrt(dn * dn + de * de)
+            az = math.degrees(math.atan2(de, dn))
+            if az < 0:
+                az = az + 360
+            c1, c2 = st.columns(2)
+            c1.metric("Distancia (m)", round(dist, 3))
+            c2.metric("Azimut", round(az, 3))
+            st.success("Calculo listo")
+    with tab4:
+        st.subheader("Nivelacion")
+        va = st.number_input("Vista Atras (m)", value=1.5, step=0.001, format="%.3f", key="v124_va")
+        bm = st.number_input("Cota BM (m)", value=10.0, step=0.001, format="%.3f", key="v124_bm")
+        vd = st.number_input("Vista Adelante (m)", value=1.2, step=0.001, format="%.3f", key="v124_vd")
+        if st.button("Calcular Nivelacion", key="v124_niv_btn", use_container_width=True):
+            ai = bm + va
+            cn = ai - vd
+            des = cn - bm
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Altura Inst", round(ai, 3))
+            c2.metric("Cota Nueva", round(cn, 3))
+            c3.metric("Desnivel", round(des, 3))
+    with tab5:
+        st.subheader("Presupuesto Rapido")
+        tipo = st.selectbox("Tipo de trabajo", ["Levantamiento", "Replanteo", "Vuelo Dron", "Nivelacion", "Desenglobe"], key="v124_tipo")
+        ha = st.number_input("Hectareas", value=1.0, min_value=0.1, key="v124_ha")
+        precio = st.number_input("Precio por Ha", value=350000, step=10000, key="v124_precio")
+        transp = st.number_input("Transporte", value=80000, step=10000, key="v124_transp")
+        if st.button("Calcular Presupuesto", key="v124_pres_btn", use_container_width=True):
+            sub = ha * precio
+            tot = sub + transp
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Subtotal", int(sub))
+            c2.metric("Transporte", int(transp))
+            c3.metric("TOTAL", int(tot))
+            st.success("Total calculado")
+    with tab6:
+        st.subheader("Bitacora de Campo")
+        if "bit_v124" not in st.session_state:
+            st.session_state["bit_v124"] = []
+        with st.form("form_bit_v124", clear_on_submit=True):
+            fb = st.date_input("Fecha", value=date.today(), key="v124_fb")
+            proy = st.text_input("Proyecto", key="v124_proy")
+            act = st.selectbox("Actividad", ["Levantamiento", "Replanteo", "Vuelo Dron", "Nivelacion", "Otro"], key="v124_act")
+            notas = st.text_area("Notas", key="v124_notas")
+            gb = st.form_submit_button("Guardar en Bitacora", use_container_width=True)
+            if gb:
+                if proy.strip() == "":
+                    st.warning("Escribe el proyecto.")
                 else:
-                    st.warning("Tu Excel debe tener: Punto, Norte, Este, Cota")
+                    st.session_state["bit_v124"].append({"Fecha": str(fb), "Proyecto": proy, "Actividad": act, "Notas": notas})
+                    st.success("Guardado")
+        if len(st.session_state["bit_v124"]) > 0:
+            dfb = pd.DataFrame(st.session_state["bit_v124"])
+            st.data
