@@ -1,4 +1,4 @@
-# GeoLegal Pro v12.6 FINAL
+# GeoLegal Pro v12.7 FINAL CORREGIDO
 import streamlit as st
 import pandas as pd
 import math
@@ -153,12 +153,8 @@ if modo == "TOPOGRAFO":
                     file_name="Procesado.xlsx"
                 )
             else:
-                st.warning(
-                    "Tu Excel debe tener:"
-                )
-                st.warning(
-                    "Punto, Norte, Este, Cota"
-                )
+                st.warning("Tu Excel debe tener:")
+                st.warning("Punto, Norte, Este, Cota")
     with t2:
         st.subheader("Modulo Dron")
         altura = st.number_input(
@@ -389,127 +385,4 @@ if modo == "DESPACHO":
                     pd.DataFrame(st.session_state["fac"])
                 )
             else:
-                st.info("No hay facturas todavia")
-    if vista == "Vista Admin":
-        st.subheader("Vista Admin - Solo Juan")
-        a1, a2, a3, a4, a5, a6, a7, a8 = st.tabs(
-            ["Inicio", "Clientes", "Procesos",
-             "Documentos", "Facturacion",
-             "Flujo Caja", "Red Neuronal",
-             "Analisis"]
-        )
-        with a1:
-            cob = 0
-            pag = 0
-            for f in st.session_state["fac"]:
-                if f["Estado"] == "Por cobrar":
-                    cob += f["Valor"]
-                if f["Estado"] == "Pagado":
-                    pag += f["Valor"]
-            tg = 0
-            for g in st.session_state["gas"]:
-                tg += g["Valor"]
-            caja = pag - tg
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Procesos", len(st.session_state["proc"]))
-            c2.metric("Clientes", len(st.session_state["cli"]))
-            c3.metric("Por Cobrar", int(cob))
-            c4.metric("En Caja", int(caja))
-            if len(st.session_state["proc"]) > 0:
-                st.dataframe(
-                    pd.DataFrame(st.session_state["proc"])
-                )
-            else:
-                st.info("No hay procesos todavia")
-        with a2:
-            with st.form("f_cli", clear_on_submit=True):
-                nc = st.text_input("Nombre completo")
-                cc = st.text_input("Celular")
-                bc = st.form_submit_button("Guardar")
-                if bc:
-                    if nc.strip() == "":
-                        st.warning("Escribe nombre")
-                    else:
-                        st.session_state["cli"].append(
-                            {"Nombre": nc, "Celular": cc}
-                        )
-                        st.success("Cliente guardado")
-            if len(st.session_state["cli"]) > 0:
-                st.dataframe(
-                    pd.DataFrame(st.session_state["cli"])
-                )
-        with a3:
-            with st.form("f_proc", clear_on_submit=True):
-                cp = st.text_input("Cliente proceso")
-                tp = st.selectbox(
-                    "Tipo",
-                    ["Tutela", "Demanda Laboral",
-                     "Nulidad", "Divorcio", "Otro"]
-                )
-                vp = st.date_input(
-                    "Vencimiento", value=date.today()
-                )
-                bp = st.form_submit_button("Guardar")
-                if bp:
-                    if cp.strip() == "":
-                        st.warning("Escribe cliente")
-                    else:
-                        st.session_state["proc"].append(
-                            {"Cliente": cp,
-                             "Tipo": tp,
-                             "Vence": str(vp)}
-                        )
-                        st.success("Proceso guardado")
-            if len(st.session_state["proc"]) > 0:
-                st.dataframe(
-                    pd.DataFrame(st.session_state["proc"])
-                )
-        with a4:
-            cd = st.text_input("Cliente documento")
-            td3 = st.selectbox(
-                "Tipo doc",
-                ["Poder", "Demanda",
-                 "Tutela", "Derecho de Peticion"]
-            )
-            hd = st.text_area("Hechos")
-            if st.button("Generar Doc Completo"):
-                if cd.strip() == "":
-                    st.warning("Escribe cliente")
-                else:
-                    tx3 = hacer_doc(td3, cd, hd)
-                    st.text_area(
-                        "Documento", tx3, height=220
-                    )
-                    st.download_button(
-                        "Descargar",
-                        data=tx3,
-                        file_name="Documento.txt"
-                    )
-        with a5:
-            with st.form("f_fac", clear_on_submit=True):
-                cf = st.text_input("Cliente a facturar")
-                conf = st.text_input("Concepto")
-                vf = st.number_input("Valor", value=500000)
-                ef = st.selectbox(
-                    "Estado",
-                    ["Por cobrar", "Pagado"]
-                )
-                bf = st.form_submit_button("Guardar")
-                if bf:
-                    if cf.strip() == "":
-                        st.warning("Escribe cliente")
-                    else:
-                        st.session_state["fac"].append(
-                            {"Cliente": cf,
-                             "Concepto": conf,
-                             "Valor": vf,
-                             "Estado": ef}
-                        )
-                        st.success("Factura guardada")
-            if len(st.session_state["fac"]) > 0:
-                dff = pd.DataFrame(
-                    st.session_state["fac"]
-                )
-                st.dataframe(dff)
-                tc = dff[
-                    dff["Estado"] == "
+                st.info("No hay fact
