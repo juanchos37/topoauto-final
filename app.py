@@ -139,7 +139,7 @@ if modo == "TOPOGRAFO":
         dm = st.number_input("Metros", value=100.0)
         if st.button("A Km"): st.write(dm/1000)
 
-    if modo == "DESPACHO":
+if modo == "DESPACHO":
     st.header("Despacho - Dra. Norma")
     if "cli" not in st.session_state: st.session_state["cli"] = []
     if "proc" not in st.session_state: st.session_state["proc"] = []
