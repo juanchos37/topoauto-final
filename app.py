@@ -139,7 +139,7 @@ if modo == "TOPOGRAFO":
         dm = st.number_input("Metros", value=100.0)
         if st.button("A Km"): st.write(dm/1000)
 
-        if modo == "DESPACHO":
+    if modo == "DESPACHO":
     st.header("Despacho - Dra. Norma")
     if "cli" not in st.session_state: st.session_state["cli"] = []
     if "proc" not in st.session_state: st.session_state["proc"] = []
@@ -260,4 +260,28 @@ if modo == "TOPOGRAFO":
                 if st.form_submit_button("Guardar"):
                     if cg.strip() == "": st.warning("Escribe concepto")
                     else:
-                       
+                        st.session_state["gas"].append({"Concepto":cg,"Categoria":cat,"Valor":vg})
+                        st.success("Guardado")
+            if len(st.session_state["gas"]) > 0:
+                dfg = pd.DataFrame(st.session_state["gas"])
+                st.dataframe(dfg)
+                st.metric("Total", int(dfg["Valor"].sum()))
+            else: st.info("Sin gastos")
+        with a7:
+            st.write("Red Neuronal")
+            tc2 = st.selectbox("Tipo caso", ["Nulidad","Tutela","Demanda Laboral","Divorcio","Otro"])
+            dem = st.selectbox("Demandado", ["Colpensiones","EPS","Empresa Privada","Estado","Otro"])
+            vc = st.number_input("Valor caso", value=18000000)
+            if st.button("Predecir"):
+                pr, co = predecir(tc2, dem, vc)
+                st.metric("Prob", pr); st.success(co)
+        with a8:
+            st.write("Analisis 4 Niveles")
+            st.write("1. Descriptivo")
+            st.write("2. Diagnostico")
+            st.write("3. Predictivo")
+            st.write("4. Prescriptivo")
+            if len(st.session_state["fac"]) > 0: st.dataframe(pd.DataFrame(st.session_state["fac"]))
+            else: st.info("Agrega facturas")
+st.divider()
+st.caption("GeoLegal Pro - Juan SAS")
